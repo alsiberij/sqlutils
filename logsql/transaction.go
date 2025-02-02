@@ -8,8 +8,7 @@ import (
 
 type (
 	queryTransaction struct {
-		logHandler       Logger
-		queryErrReplacer QueryErrReplacer
+		logHandler Logger
 
 		connCtx     context.Context
 		transaction driver.Tx

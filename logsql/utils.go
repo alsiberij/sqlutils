@@ -14,3 +14,11 @@ func driverValuesToNamed(args []driver.Value) []driver.NamedValue {
 	}
 	return result
 }
+
+func driverNamedToValues(args []driver.NamedValue) []driver.Value {
+	result := make([]driver.Value, len(args))
+	for i, arg := range args {
+		result[i] = arg.Value
+	}
+	return result
+}

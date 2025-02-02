@@ -9,13 +9,10 @@ type (
 	}
 )
 
-// Validate returns error if some fields are nil
+// Validate returns error if config is not ready to use
 func (c Config) Validate() error {
 	if c.LogHandler == nil {
 		return ErrNilLogHandler
-	}
-	if c.Qer == nil {
-		c.Qer = NoOpQueryErrReplacer
 	}
 
 	return nil

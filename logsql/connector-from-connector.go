@@ -13,6 +13,10 @@ func NewConnectorFromConnector(connector driver.Connector, cfg Config) driver.Co
 		panic(err)
 	}
 
+	if cfg.Qer == nil {
+		cfg.Qer = NoOpQueryErrReplacer
+	}
+
 	return &connectorFromConnector{
 		logHandler:       cfg.LogHandler,
 		queryErrReplacer: cfg.Qer,

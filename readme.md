@@ -27,7 +27,6 @@ func main() {
 	// Init l, dr, dsn
 
 	loggedConnector := logsql.NewConnectorFromDriver(dr, dsn, logsql.Config{
-		Qer: logsql.NoOpQueryErrReplacer,
 		LogHandler: MySlogLogger{
 			logger: l,
 		},

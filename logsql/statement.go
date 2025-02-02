@@ -73,7 +73,7 @@ func (s *queryStatement) Query(args []driver.Value) (driver.Rows, error) {
 func (s *queryStatement) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
 	stExecerCtx, ok := s.statement.(driver.StmtExecContext)
 	if !ok {
-		return nil, ErrUnsupportedByDriver
+		return s.Exec(driverNamedToValues(args))
 	}
 
 	t0 := time.Now()
@@ -101,7 +101,7 @@ func (s *queryStatement) ExecContext(ctx context.Context, args []driver.NamedVal
 func (s *queryStatement) QueryContext(ctx context.Context, args []driver.NamedValue) (driver.Rows, error) {
 	stQueryerCtx, ok := s.statement.(driver.StmtQueryContext)
 	if !ok {
-		return nil, driver.ErrSkip
+		return s.Query(driverNamedToValues(args))
 	}
 
 	t0 := time.Now()
@@ -121,8 +121,9 @@ func (s *queryStatement) QueryContext(ctx context.Context, args []driver.NamedVa
 	}
 
 	return &queryRows{
-		connCtx: ctx,
-		rows:    rows,
+		logHandler: s.logHandler,
+		connCtx:    ctx,
+		rows:       rows,
 	}, nil
 }
 

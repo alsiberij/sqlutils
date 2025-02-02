@@ -19,17 +19,13 @@ type (
 		Exec(ctx context.Context, query string, args []driver.NamedValue, replacedErr error, err error, dt time.Duration)
 		Query(ctx context.Context, query string, args []driver.NamedValue, replacedErr error, err error, dt time.Duration)
 
-		NamedValueCheck(ctx context.Context, err error, dt time.Duration)
-		ValidateConn(ctx context.Context, isValid bool, dt time.Duration)
-
 		Ping(ctx context.Context, err error, dt time.Duration)
-		ResetSession(ctx context.Context, err error, dt time.Duration)
 
 		RowsClose(ctx context.Context, err error, dt time.Duration)
 		// RowsNext can receive [io.EOF] as err in the end of scanning
 		RowsNext(ctx context.Context, dest []driver.Value, err error, dt time.Duration)
 
-		PreparingStatement(ctx context.Context, query string, err error, dt time.Duration)
+		PrepareStatement(ctx context.Context, query string, err error, dt time.Duration)
 		ClosePreparedStatement(ctx context.Context, query string, err error, dt time.Duration)
 		ExecPreparedStatement(ctx context.Context, query string, args []driver.NamedValue, replacedErr error, err error, dt time.Duration)
 		QueryPreparedStatement(ctx context.Context, query string, args []driver.NamedValue, replacedErr error, err error, dt time.Duration)

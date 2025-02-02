@@ -19,7 +19,7 @@ func (c *connection) Prepare(query string) (driver.Stmt, error) {
 	t0 := time.Now()
 
 	stmt, err := c.conn.Prepare(query)
-	c.logHandler.PreparingStatement(context.Background(), query, err, time.Since(t0))
+	c.logHandler.PrepareStatement(context.Background(), query, err, time.Since(t0))
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +52,7 @@ func (c *connection) Begin() (driver.Tx, error) {
 	}
 
 	return &queryTransaction{
+		logHandler:  c.logHandler,
 		connCtx:     context.Background(),
 		transaction: tx,
 	}, err
@@ -60,7 +61,7 @@ func (c *connection) Begin() (driver.Tx, error) {
 func (c *connection) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
 	connBeginTx, ok := c.conn.(driver.ConnBeginTx)
 	if !ok {
-		return nil, ErrUnsupportedByDriver
+		return c.Begin()
 	}
 
 	t0 := time.Now()
@@ -72,6 +73,7 @@ func (c *connection) BeginTx(ctx context.Context, opts driver.TxOptions) (driver
 	}
 
 	return &queryTransaction{
+		logHandler:  c.logHandler,
 		connCtx:     ctx,
 		transaction: tx,
 	}, nil
@@ -80,13 +82,13 @@ func (c *connection) BeginTx(ctx context.Context, opts driver.TxOptions) (driver
 func (c *connection) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
 	connPrepareTx, ok := c.conn.(driver.ConnPrepareContext)
 	if !ok {
-		return nil, ErrUnsupportedByDriver
+		return c.Prepare(query)
 	}
 
 	t0 := time.Now()
 
 	stmt, err := connPrepareTx.PrepareContext(ctx, query)
-	c.logHandler.PreparingStatement(ctx, query, err, time.Since(t0))
+	c.logHandler.PrepareStatement(ctx, query, err, time.Since(t0))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +105,7 @@ func (c *connection) PrepareContext(ctx context.Context, query string) (driver.S
 func (c *connection) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
 	connExecerCtx, ok := c.conn.(driver.ExecerContext)
 	if !ok {
-		return nil, driver.ErrSkip
+		return c.Exec(query, driverNamedToValues(args))
 	}
 
 	t0 := time.Now()
@@ -159,7 +161,7 @@ func (c *connection) Exec(query string, args []driver.Value) (driver.Result, err
 func (c *connection) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
 	connQueryerCtx, ok := c.conn.(driver.QueryerContext)
 	if !ok {
-		return nil, driver.ErrSkip
+		return c.Query(query, driverNamedToValues(args))
 	}
 
 	t0 := time.Now()
@@ -234,12 +236,7 @@ func (c *connection) ResetSession(ctx context.Context) error {
 		return nil
 	}
 
-	t0 := time.Now()
-
-	err := connSessionResetter.ResetSession(ctx)
-	c.logHandler.ResetSession(ctx, err, time.Since(t0))
-
-	return err
+	return connSessionResetter.ResetSession(ctx)
 }
 
 func (c *connection) IsValid() bool {
